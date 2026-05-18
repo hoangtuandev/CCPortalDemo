@@ -1,0 +1,135 @@
+<%- include('layout', { pageTitle: 'Tổng quan', activePage: 'overview', username }) %>
+
+<div class="page-header">
+  <h1>Tổng quan</h1>
+  <span class="text-faint" style="font-size:.875rem">CC Portal Admin</span>
+</div>
+
+<%
+const ACTION_LABEL = {
+  login:               'Đăng nhập',
+  login_failed:        'Đăng nhập thất bại',
+  logout:              'Đăng xuất',
+  session_expired:     'Phiên hết hạn',
+  password_changed:    'Đổi mật khẩu',
+  admin_user_created:  'Tạo tài khoản',
+  admin_user_modified: 'Sửa tài khoản',
+  admin_role_created:  'Tạo vai trò',
+  admin_role_modified: 'Sửa vai trò',
+  admin_role_deleted:  'Xóa vai trò',
+};
+const ACTION_CLASS = {
+  login:               'act-login',
+  login_failed:        'act-login_failed',
+  logout:              'act-logout',
+  session_expired:     'act-session_expired',
+  password_changed:    'act-password',
+  admin_user_created:  'act-admin_create',
+  admin_user_modified: 'act-admin_modify',
+  admin_role_created:  'act-role_ops',
+  admin_role_modified: 'act-role_ops',
+  admin_role_deleted:  'act-login_failed',
+};
+%>
+
+<!-- ── Thống kê ── -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-body">
+      <div class="stat-label">Tài khoản</div>
+      <div class="stat-value"><%= stats.activeUsers + stats.lockedUsers %></div>
+      <div class="stat-sub"><%= stats.activeUsers %> hoạt động · <%= stats.lockedUsers %> bị khóa</div>
+    </div>
+    <div class="stat-icon blue">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-body">
+      <div class="stat-label">Vai trò</div>
+      <div class="stat-value"><%= stats.totalRoles %></div>
+      <div class="stat-sub">&nbsp;</div>
+    </div>
+    <div class="stat-icon purple">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-body">
+      <div class="stat-label">Đăng nhập hôm nay</div>
+      <div class="stat-value" style="color:var(--c-green)"><%= stats.loginToday %></div>
+      <div class="stat-sub">thành công</div>
+    </div>
+    <div class="stat-icon green">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-body">
+      <div class="stat-label">Đăng nhập thất bại</div>
+      <div class="stat-value" style="color:<%= stats.failedToday > 0 ? 'var(--c-red)' : 'var(--c-text-faint)' %>"><%= stats.failedToday %></div>
+      <div class="stat-sub">hôm nay</div>
+    </div>
+    <div class="stat-icon red">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9"  y1="9" x2="15" y2="15"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ── 10 sự kiện gần nhất ── -->
+<div class="page-header" style="margin-bottom:.875rem">
+  <h2>Hoạt động gần nhất</h2>
+  <a href="/admin/logs" class="btn btn-secondary btn-sm">Xem tất cả →</a>
+</div>
+
+<% if (recentLogs.length === 0) { %>
+  <p class="text-faint">Chưa có hoạt động nào.</p>
+<% } else { %>
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Thời gian</th>
+        <th>Tài khoản</th>
+        <th>Hành động</th>
+        <th>IP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% recentLogs.forEach(log => { %>
+      <tr>
+        <td class="font-mono text-muted" style="font-size:.875rem;white-space:nowrap">
+          <%= log.created_at.replace('T', ' ').slice(0, 19) %>
+        </td>
+        <td class="font-medium"><%= log.username || '—' %></td>
+        <td>
+          <span class="<%= ACTION_CLASS[log.action] || '' %>" style="font-size:.875rem">
+            <%= ACTION_LABEL[log.action] || log.action %>
+          </span>
+        </td>
+        <td class="font-mono text-faint" style="font-size:.875rem"><%= log.ip_address || '—' %></td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<%- include('_foot') %>

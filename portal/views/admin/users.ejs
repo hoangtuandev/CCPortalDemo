@@ -1,0 +1,108 @@
+<%- include('layout', { pageTitle: 'Tài khoản', activePage: 'users', username }) %>
+
+<div class="page-header">
+  <h1>Quản lý tài khoản</h1>
+  <a href="/admin/users/new" class="btn btn-success">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Tạo tài khoản
+  </a>
+</div>
+
+<% if (success) { %>
+<div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<!-- Filter -->
+<form method="get" action="/admin/users" class="filter-bar">
+  <div class="form-group">
+    <label class="form-label">Vai trò</label>
+    <select name="role" class="form-control form-control-sm">
+      <option value="">Tất cả vai trò</option>
+      <% roles.forEach(r => { %>
+        <option value="<%= r.id %>" <%= filter.roleId === r.id ? 'selected' : '' %>><%= r.display_name %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Trạng thái</label>
+    <select name="status" class="form-control form-control-sm">
+      <option value="">Tất cả trạng thái</option>
+      <option value="active"      <%= filter.status === 'active'      ? 'selected' : '' %>>Đang hoạt động</option>
+      <option value="locked"      <%= filter.status === 'locked'      ? 'selected' : '' %>>Đã khóa</option>
+      <option value="temp-locked" <%= filter.status === 'temp-locked' ? 'selected' : '' %>>Tạm khóa</option>
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary btn-sm">Lọc</button>
+    <% if (filter.roleId || filter.status) { %>
+      <a href="/admin/users" class="btn btn-secondary btn-sm">Xóa filter</a>
+    <% } %>
+  </div>
+</form>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">
+  <span style="font-size:.875rem;color:var(--c-text-muted)">
+    <%= pagination.total %> tài khoản<% if (filter.roleId || filter.status) { %> <span class="badge badge-blue">đã lọc</span><% } %>
+  </span>
+</div>
+
+<% if (users.length === 0) { %>
+  <p class="text-faint">Không có tài khoản nào khớp.</p>
+<% } else { %>
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Tên đăng nhập</th>
+        <th>Họ tên</th>
+        <th>Vai trò</th>
+        <th>Trạng thái</th>
+        <th>Ngày tạo</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(u => { %>
+      <tr>
+        <td class="font-medium" style="color:var(--c-text)"><%= u.username %></td>
+        <td><%= u.full_name || '—' %></td>
+        <td class="text-muted"><%= u.role_name %></td>
+        <td>
+          <% if (u.statusLabel === 'active') { %>
+            <span class="badge badge-green">Đang hoạt động</span>
+          <% } else if (u.statusLabel === 'locked') { %>
+            <span class="badge badge-red">Đã khóa</span>
+          <% } else { %>
+            <span class="badge badge-amber">Tạm khóa</span>
+          <% } %>
+        </td>
+        <td class="text-muted font-mono" style="font-size:.875rem"><%= u.created_at ? u.created_at.slice(0, 10) : '—' %></td>
+        <td>
+          <a href="/admin/users/<%= u.id %>/edit" class="btn btn-secondary btn-sm">Sửa</a>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<% if (pagination.totalPages > 1) { %>
+<div class="pagination">
+  <% for (let p = 1; p <= pagination.totalPages; p++) { %>
+    <%
+      const qs = new URLSearchParams();
+      if (filter.roleId) qs.set('role', filter.roleId);
+      if (filter.status) qs.set('status', filter.status);
+      qs.set('page', p);
+    %>
+    <a href="/admin/users?<%= qs.toString() %>" class="page-btn <%= p === pagination.page ? 'active' : '' %>">
+      <%= p %>
+    </a>
+  <% } %>
+</div>
+<% } %>
+
+<%- include('_foot') %>

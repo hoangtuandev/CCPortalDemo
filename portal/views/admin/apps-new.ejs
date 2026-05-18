@@ -1,0 +1,66 @@
+<%- include('layout', { pageTitle: 'Thêm ứng dụng', activePage: 'apps', username }) %>
+
+<div class="page-header">
+  <h1>Thêm ứng dụng mới</h1>
+  <a href="/admin/apps" class="btn btn-secondary btn-sm">← Danh sách</a>
+</div>
+
+<% if (error) { %>
+<div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<form method="post" action="/admin/apps" class="admin-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="form-group">
+    <label class="form-label">Slug <span class="req">*</span></label>
+    <input class="form-control font-mono" type="text" name="slug" value="<%= form.slug || '' %>"
+           placeholder="vd: quan-tri-nhan-su, kho-lanh"
+           autocomplete="off" required>
+    <p class="form-hint">Chữ thường a–z, số, dấu gạch ngang. Phải trùng tên thư mục trong <code>apps/</code>. Không thể đổi sau khi tạo.</p>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Tên ứng dụng <span class="req">*</span></label>
+    <input class="form-control" type="text" name="name" value="<%= form.name || '' %>"
+           placeholder="vd: Quản trị nhân sự, Kho lạnh" required>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Mô tả <span class="text-muted" style="font-weight:400">(tùy chọn)</span></label>
+    <textarea class="form-control" name="description" rows="2"
+              placeholder="Mô tả ngắn về chức năng ứng dụng"><%= form.description || '' %></textarea>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Icon</label>
+      <input class="form-control" type="text" name="icon" value="<%= form.icon || '📦' %>"
+             style="font-size:1.25rem;text-align:center">
+      <p class="form-hint">Một emoji đại diện cho app.</p>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Thứ tự hiển thị</label>
+      <input class="form-control" type="number" name="sort_order" value="<%= form.sort_order ?? 0 %>"
+             min="0" step="10">
+      <p class="form-hint">Số nhỏ hiển thị trước.</p>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-bottom:1.75rem">
+    <label class="form-label">Trạng thái</label>
+    <select class="form-control" name="status">
+      <% statuses.forEach(s => { %>
+      <% const labels = { stable: 'Hoạt động', beta: 'Beta', disabled: 'Tắt' }; %>
+      <option value="<%= s %>" <%= (form.status || 'stable') === s ? 'selected' : '' %>><%= labels[s] %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div style="display:flex;gap:.75rem">
+    <button type="submit" class="btn btn-success">Thêm ứng dụng</button>
+    <a href="/admin/apps" class="btn btn-secondary">Hủy</a>
+  </div>
+</form>
+
+<%- include('_foot') %>

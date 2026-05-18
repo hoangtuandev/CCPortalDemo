@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CC Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="topbar">
+    <span class="brand">
+      CC Portal
+      <span class="brand-dot"></span>
+    </span>
+    <div class="user-area">
+      <div class="user-avatar"><%= fullName.charAt(0).toUpperCase() %></div>
+      <span class="user-name"><%= fullName %> &mdash; <%= roleName %></span>
+      <a href="/change-password" class="header-btn">Đổi mật khẩu</a>
+      <form method="POST" action="/logout" style="margin:0">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="header-btn">Đăng xuất</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="dash-content">
+    <div class="welcome-block">
+      <h1>Xin chào, <%= fullName %></h1>
+      <p class="sub">Vai trò: <%= roleName %></p>
+    </div>
+
+    <% if (apps.length > 0) { %>
+      <p class="section-label">Ứng dụng của bạn</p>
+      <div class="app-grid">
+        <% apps.forEach(function(app) { %>
+          <a href="/apps/<%= app.slug %>" class="app-card">
+            <span class="app-icon"><%= app.icon %></span>
+            <span class="app-name"><%= app.name %></span>
+            <% if (app.status === 'beta') { %>
+              <span class="badge-beta">Beta</span>
+            <% } %>
+            <% if (app.description) { %>
+              <span class="app-desc"><%= app.description %></span>
+            <% } %>
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="alert alert-info" style="margin-bottom:2rem">
+        Chưa có ứng dụng nào được phân quyền cho vai trò của bạn. Liên hệ quản trị viên để được cấp quyền.
+      </div>
+    <% } %>
+
+    <div class="actions-row">
+      <% if (isAdmin) { %>
+        <a href="/admin" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/>
+            <path d="M7 7h.01"/>
+          </svg>
+          Khu vực quản trị
+        </a>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

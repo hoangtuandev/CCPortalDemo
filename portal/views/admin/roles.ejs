@@ -1,0 +1,56 @@
+<%- include('layout', { pageTitle: 'Vai trò', activePage: 'roles', username }) %>
+
+<div class="page-header">
+  <h1>Quản lý vai trò</h1>
+  <a href="/admin/roles/new" class="btn btn-success">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Tạo vai trò
+  </a>
+</div>
+
+<% if (success) { %>
+<div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<% if (roles.length === 0) { %>
+  <p class="text-faint">Chưa có vai trò nào.</p>
+<% } else { %>
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Mã vai trò</th>
+        <th>Tên hiển thị</th>
+        <th>Mô tả</th>
+        <th style="text-align:center">Quyền admin</th>
+        <th style="text-align:center">Số user</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% roles.forEach(r => { %>
+      <tr>
+        <td class="font-mono text-muted" style="font-size:.875rem"><%= r.name %></td>
+        <td class="font-medium" style="color:var(--c-text)"><%= r.display_name %></td>
+        <td class="text-muted" style="font-size:.875rem"><%= r.description || '—' %></td>
+        <td style="text-align:center">
+          <% if (r.is_admin) { %>
+            <span class="badge badge-amber">Admin</span>
+          <% } else { %>
+            <span class="text-faint">—</span>
+          <% } %>
+        </td>
+        <td class="text-muted" style="text-align:center"><%= r.user_count %></td>
+        <td>
+          <a href="/admin/roles/<%= r.id %>/edit" class="btn btn-secondary btn-sm">Sửa</a>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<%- include('_foot') %>

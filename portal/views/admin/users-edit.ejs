@@ -1,0 +1,154 @@
+<%- include('layout', { pageTitle: 'Sửa tài khoản', activePage: 'users', username }) %>
+
+<div class="page-header">
+  <h1>Sửa tài khoản</h1>
+  <a href="/admin/users" class="btn btn-secondary btn-sm">← Danh sách</a>
+</div>
+
+<% if (success) { %>
+<div class="alert alert-success"><%= success %></div>
+<% } %>
+<% if (error) { %>
+<div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<%
+  const val = {
+    full_name: form ? form.full_name : user.full_name,
+    role_id:   form ? form.role_id   : user.role_id,
+    barcode:   form ? form.barcode   : (user.barcode ?? ''),
+  };
+%>
+
+<form method="post" action="/admin/users/<%= user.id %>" style="max-width:480px">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="form-group">
+    <label class="form-label">Tên đăng nhập</label>
+    <input class="form-control" type="text" value="<%= user.username %>" disabled
+           style="background:var(--c-bg);color:var(--c-text-muted)">
+    <p class="form-hint">Không thể thay đổi tên đăng nhập.</p>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Họ tên <span class="req">*</span></label>
+    <input class="form-control" type="text" name="full_name" value="<%= val.full_name %>" required>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Vai trò <span class="req">*</span></label>
+    <select class="form-control" name="role_id" required>
+      <% roles.forEach(r => { %>
+        <option value="<%= r.id %>" <%= (val.role_id == r.id) ? 'selected' : '' %>><%= r.display_name %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-group" style="margin-bottom:1.75rem">
+    <label class="form-label">
+      Barcode thẻ nhân viên
+      <span style="font-weight:400;color:var(--c-text-muted)">(tùy chọn)</span>
+    </label>
+    <input class="form-control" type="text" name="barcode" value="<%= val.barcode %>"
+           placeholder="8–20 chữ số" autocomplete="off" inputmode="numeric">
+  </div>
+
+  <div style="display:flex;gap:.75rem;align-items:center">
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a href="/admin/users" class="btn btn-secondary">Hủy</a>
+  </div>
+</form>
+
+<hr style="border:none;border-top:1px solid var(--c-border);margin:2.5rem 0">
+
+<!-- ── Đặt lại mật khẩu ── -->
+<div style="max-width:480px">
+  <h2 style="margin-bottom:.375rem">Đặt lại mật khẩu</h2>
+  <p style="font-size:.875rem;color:var(--c-text-muted);margin-bottom:1rem">
+    User sẽ bị yêu cầu đổi mật khẩu khi đăng nhập lần tiếp theo. Mọi phiên đang đăng nhập sẽ bị hủy.
+  </p>
+  <form method="post" action="/admin/users/<%= user.id %>/reset-password" style="display:flex;gap:.75rem;align-items:flex-end">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-group mb-0" style="flex:1">
+      <label class="form-label">Mật khẩu tạm mới <span class="req">*</span></label>
+      <input class="form-control" type="password" name="new_password"
+             placeholder="Tối thiểu 10 ký tự, có chữ và số"
+             autocomplete="new-password" required>
+    </div>
+    <button type="submit" class="btn btn-warning" style="white-space:nowrap">
+      Đặt lại
+    </button>
+  </form>
+</div>
+
+<!-- ── Trạng thái & Khóa tài khoản ── -->
+<%
+  const userStatusLabel = !user.is_active
+    ? 'locked'
+    : (user.locked_until && user.locked_until > now) ? 'temp-locked'
+    : 'active';
+%>
+<hr style="border:none;border-top:1px solid var(--c-border);margin:2.5rem 0">
+<div style="max-width:480px">
+  <h2 style="margin-bottom:.375rem">Trạng thái tài khoản</h2>
+
+  <% if (userStatusLabel === 'locked') { %>
+    <p style="font-size:.875rem;color:#991b1b;margin-bottom:1rem">
+      Tài khoản <strong>đã bị khóa</strong> bởi quản trị viên.
+    </p>
+    <form method="post" action="/admin/users/<%= user.id %>/unlock">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="btn btn-success">Kích hoạt lại tài khoản</button>
+    </form>
+
+  <% } else if (userStatusLabel === 'temp-locked') { %>
+    <p class="alert alert-warning">
+      Tài khoản <strong>đang bị tạm khóa</strong> do đăng nhập sai nhiều lần. Sẽ tự mở sau khi hết thời gian khóa.
+    </p>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <form method="post" action="/admin/users/<%= user.id %>/unlock-temp">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-primary">Mở khóa tạm thời ngay</button>
+      </form>
+      <form method="post" action="/admin/users/<%= user.id %>/lock">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn btn-danger"
+                onclick="return confirm('Xác nhận khóa vĩnh viễn tài khoản \'<%= user.username %>\'?')">
+          Khóa vĩnh viễn
+        </button>
+      </form>
+    </div>
+
+  <% } else { %>
+    <p style="font-size:.875rem;color:var(--c-text-muted);margin-bottom:1rem">
+      Tài khoản đang hoạt động bình thường.
+    </p>
+    <form method="post" action="/admin/users/<%= user.id %>/lock">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="btn btn-danger"
+              onclick="return confirm('Xác nhận khóa tài khoản \'<%= user.username %>\'?')">
+        Khóa tài khoản
+      </button>
+    </form>
+  <% } %>
+</div>
+
+<!-- ── Xóa tài khoản ── -->
+<% if (!hasLogs) { %>
+<hr style="border:none;border-top:1px solid #fecaca;margin:2.5rem 0">
+<div style="max-width:480px">
+  <h2 style="margin-bottom:.375rem;color:var(--c-red)">Xóa tài khoản</h2>
+  <p style="font-size:.875rem;color:var(--c-text-muted);margin-bottom:1rem">
+    Tài khoản chưa có hoạt động nào. Xóa là hành động <strong>không thể hoàn tác</strong>.
+  </p>
+  <form method="post" action="/admin/users/<%= user.id %>/delete">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="btn btn-danger"
+            onclick="return confirm('Xác nhận xóa tài khoản \'<%= user.username %>\'?')">
+      Xóa tài khoản này
+    </button>
+  </form>
+</div>
+<% } %>
+
+<%- include('_foot') %>

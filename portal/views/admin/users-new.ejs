@@ -1,0 +1,63 @@
+<%- include('layout', { pageTitle: 'Tạo tài khoản', activePage: 'users', username }) %>
+
+<div class="page-header">
+  <h1>Tạo tài khoản mới</h1>
+</div>
+
+<% if (error) { %>
+<div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<form method="post" action="/admin/users" style="max-width:480px">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="form-group">
+    <label class="form-label">Tên đăng nhập <span class="req">*</span></label>
+    <input class="form-control" type="text" name="username" value="<%= form.username ?? '' %>"
+           placeholder="vd: nguyen_van_a"
+           autocomplete="off" autocapitalize="none" spellcheck="false" required>
+    <p class="form-hint">Chữ thường (a–z), số, dấu gạch dưới. Bắt đầu bằng chữ. Dài 3–30 ký tự.</p>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Họ tên <span class="req">*</span></label>
+    <input class="form-control" type="text" name="full_name" value="<%= form.full_name ?? '' %>"
+           placeholder="vd: Nguyễn Văn A" required>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Mật khẩu tạm <span class="req">*</span></label>
+    <input class="form-control" type="password" name="password"
+           placeholder="Tối thiểu 10 ký tự, có chữ và số"
+           autocomplete="new-password" required>
+    <p class="form-hint">User sẽ bị yêu cầu đổi mật khẩu khi đăng nhập lần đầu.</p>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Vai trò <span class="req">*</span></label>
+    <select class="form-control" name="role_id" required>
+      <option value="">— Chọn vai trò —</option>
+      <% roles.forEach(r => { %>
+        <option value="<%= r.id %>" <%= (form.role_id == r.id) ? 'selected' : '' %>><%= r.display_name %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-group" style="margin-bottom:1.75rem">
+    <label class="form-label">
+      Barcode thẻ nhân viên
+      <span style="font-weight:400;color:var(--c-text-muted)">(tùy chọn)</span>
+    </label>
+    <input class="form-control" type="text" name="barcode" value="<%= form.barcode ?? '' %>"
+           placeholder="8–20 chữ số"
+           autocomplete="off" inputmode="numeric">
+    <p class="form-hint">Dùng cho đăng nhập bằng barcode ở phiên bản sau. Để trống nếu chưa có.</p>
+  </div>
+
+  <div style="display:flex;gap:.75rem;align-items:center">
+    <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+    <a href="/admin/users" class="btn btn-secondary">Hủy</a>
+  </div>
+</form>
+
+<%- include('_foot') %>

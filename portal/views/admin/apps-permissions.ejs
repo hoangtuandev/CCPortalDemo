@@ -1,0 +1,48 @@
+<%- include('layout', { pageTitle: 'Phân quyền ứng dụng', activePage: 'apps', username }) %>
+
+<div class="page-header">
+  <h1>Phân quyền — <%= app.name %></h1>
+  <a href="/admin/apps/<%= app.id %>/edit" class="btn btn-secondary btn-sm">← Sửa app</a>
+</div>
+
+<p class="text-muted" style="margin-top:-.75rem;margin-bottom:1.5rem;font-size:.875rem">
+  Slug: <code class="font-mono" style="background:var(--c-bg);padding:.1rem .35rem;border-radius:3px;border:1px solid var(--c-border)"><%= app.slug %></code>
+</p>
+
+<% if (success) { %>
+<div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<% if (roles.length === 0) { %>
+  <p class="text-faint">Chưa có vai trò nào trong hệ thống.</p>
+<% } else { %>
+<form method="post" action="/admin/apps/<%= app.id %>/permissions" class="admin-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <p style="font-size:.875rem;color:var(--c-text-2);margin-bottom:.875rem">
+    Chọn các vai trò được phép truy cập ứng dụng này:
+  </p>
+
+  <div class="perm-list">
+    <% roles.forEach(r => { %>
+    <label class="perm-item <%= r.has_access ? 'is-checked' : '' %>">
+      <input type="checkbox" name="role_ids" value="<%= r.id %>" <%= r.has_access ? 'checked' : '' %>>
+      <div>
+        <div class="perm-name">
+          <%= r.display_name %>
+          <% if (r.is_admin) { %><span class="badge badge-amber" style="margin-left:.375rem">Admin</span><% } %>
+        </div>
+        <div class="perm-slug"><%= r.name %></div>
+      </div>
+    </label>
+    <% }) %>
+  </div>
+
+  <div style="display:flex;gap:.75rem">
+    <button type="submit" class="btn btn-primary">Lưu quyền truy cập</button>
+    <a href="/admin/apps/<%= app.id %>/edit" class="btn btn-secondary">← Quay lại</a>
+  </div>
+</form>
+<% } %>
+
+<%- include('_foot') %>

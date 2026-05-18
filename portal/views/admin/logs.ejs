@@ -1,0 +1,123 @@
+<%- include('layout', { pageTitle: 'Nhật ký hoạt động', activePage: 'logs', username }) %>
+
+<div class="page-header">
+  <h1>Nhật ký hoạt động</h1>
+</div>
+
+<%
+const ACTION_LABEL = {
+  login:                'Đăng nhập',
+  login_failed:         'Đăng nhập thất bại',
+  logout:               'Đăng xuất',
+  session_expired:      'Phiên hết hạn',
+  password_changed:     'Đổi mật khẩu',
+  admin_user_created:   'Tạo tài khoản',
+  admin_user_modified:  'Sửa tài khoản',
+  admin_role_created:   'Tạo vai trò',
+  admin_role_modified:  'Sửa vai trò',
+  admin_role_deleted:   'Xóa vai trò',
+};
+const ACTION_BADGE = {
+  login:            'badge-green',
+  login_failed:     'badge-red',
+  logout:           'badge-gray',
+  session_expired:  'badge-amber',
+  password_changed: 'badge-blue',
+};
+const hasFilter = filter.username || filter.action || filter.from || filter.to;
+%>
+
+<form method="get" action="/admin/logs" class="filter-bar">
+  <div class="form-group">
+    <label class="form-label">Tài khoản</label>
+    <input class="form-control form-control-sm" type="text" name="username"
+           value="<%= filter.username %>" placeholder="Tìm theo username">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Hành động</label>
+    <select class="form-control form-control-sm" name="action">
+      <option value="">Tất cả</option>
+      <% actions.forEach(a => { %>
+        <option value="<%= a %>" <%= filter.action === a ? 'selected' : '' %>>
+          <%= ACTION_LABEL[a] || a %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Từ ngày</label>
+    <input class="form-control form-control-sm" type="date" name="from" value="<%= filter.from %>">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Đến ngày</label>
+    <input class="form-control form-control-sm" type="date" name="to" value="<%= filter.to %>">
+  </div>
+  <div class="filter-actions">
+    <button type="submit" class="btn btn-primary btn-sm">Lọc</button>
+    <% if (hasFilter) { %>
+      <a href="/admin/logs" class="btn btn-secondary btn-sm">Xóa filter</a>
+    <% } %>
+  </div>
+</form>
+
+<div style="margin-bottom:.875rem;font-size:.875rem;color:var(--c-text-muted)">
+  <%= pagination.total %> bản ghi<% if (hasFilter) { %> <span class="badge badge-blue">đã lọc</span><% } %>
+</div>
+
+<% if (logs.length === 0) { %>
+  <p class="text-faint">Không có bản ghi nào khớp.</p>
+<% } else { %>
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Thời gian</th>
+        <th>Tài khoản</th>
+        <th>Hành động</th>
+        <th>IP</th>
+        <th>Chi tiết</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% logs.forEach(log => {
+        const badgeClass = ACTION_BADGE[log.action]
+          || (log.action && log.action.startsWith('admin_') ? 'badge-purple' : 'badge-gray');
+      %>
+      <tr>
+        <td class="font-mono text-muted" style="font-size:.8125rem;white-space:nowrap">
+          <%= log.created_at ? log.created_at.replace('T', ' ').slice(0, 19) : '—' %>
+        </td>
+        <td class="font-medium"><%= log.username || '—' %></td>
+        <td><span class="badge <%= badgeClass %>"><%= ACTION_LABEL[log.action] || log.action %></span></td>
+        <td class="font-mono text-faint" style="font-size:.8125rem"><%= log.ip_address || '—' %></td>
+        <td class="font-mono text-muted"
+            style="font-size:.75rem;max-width:260px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"
+            title="<%= (log.details || '').replace(/"/g, '&quot;') %>">
+          <%= log.details || '' %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<% if (pagination.totalPages > 1) { %>
+<div class="pagination">
+  <% for (let p = 1; p <= pagination.totalPages; p++) { %>
+    <%
+      const qs = new URLSearchParams();
+      if (filter.username) qs.set('username', filter.username);
+      if (filter.action)   qs.set('action',   filter.action);
+      if (filter.from)     qs.set('from',      filter.from);
+      if (filter.to)       qs.set('to',        filter.to);
+      qs.set('page', p);
+    %>
+    <a href="/admin/logs?<%= qs.toString() %>" class="page-btn <%= p === pagination.page ? 'active' : '' %>">
+      <%= p %>
+    </a>
+  <% } %>
+</div>
+<% } %>
+
+<%- include('_foot') %>

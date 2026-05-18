@@ -1,0 +1,90 @@
+<%- include('layout', { pageTitle: 'Sửa ứng dụng', activePage: 'apps', username }) %>
+
+<div class="page-header">
+  <h1>Sửa ứng dụng</h1>
+  <a href="/admin/apps" class="btn btn-secondary btn-sm">← Danh sách</a>
+</div>
+
+<% if (success) { %>
+<div class="alert alert-success"><%= success %></div>
+<% } %>
+<% if (error) { %>
+<div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<%
+  const val = {
+    name:        form ? form.name        : app.name,
+    description: form ? form.description : (app.description ?? ''),
+    icon:        form ? form.icon        : app.icon,
+    status:      form ? form.status      : app.status,
+    sort_order:  form != null ? form.sort_order : app.sort_order,
+  };
+%>
+
+<form method="post" action="/admin/apps/<%= app.id %>" class="admin-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="form-group">
+    <label class="form-label">Slug</label>
+    <input class="form-control font-mono" type="text" value="<%= app.slug %>" disabled
+           style="background:var(--c-bg);color:var(--c-text-muted)">
+    <p class="form-hint">Slug không thể thay đổi sau khi tạo.</p>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Tên ứng dụng <span class="req">*</span></label>
+    <input class="form-control" type="text" name="name" value="<%= val.name %>" required>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Mô tả <span class="text-muted" style="font-weight:400">(tùy chọn)</span></label>
+    <textarea class="form-control" name="description" rows="2"><%= val.description %></textarea>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Icon</label>
+      <input class="form-control" type="text" name="icon" value="<%= val.icon %>"
+             style="font-size:1.25rem;text-align:center">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Thứ tự hiển thị</label>
+      <input class="form-control" type="number" name="sort_order" value="<%= val.sort_order %>"
+             min="0" step="10">
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-bottom:1.75rem">
+    <label class="form-label">Trạng thái</label>
+    <select class="form-control" name="status">
+      <% statuses.forEach(s => { %>
+      <% const labels = { stable: 'Hoạt động', beta: 'Beta', disabled: 'Tắt' }; %>
+      <option value="<%= s %>" <%= val.status === s ? 'selected' : '' %>><%= labels[s] %></option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div style="display:flex;gap:.75rem">
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a href="/admin/apps/<%= app.id %>/permissions" class="btn btn-secondary" style="color:var(--c-purple)">Phân quyền</a>
+    <a href="/admin/apps" class="btn btn-secondary">Hủy</a>
+  </div>
+</form>
+
+<hr class="section-sep-danger">
+<div class="danger-zone">
+  <h2>Xóa ứng dụng</h2>
+  <p class="form-hint" style="margin-bottom:1rem">
+    Xóa sẽ đồng thời xóa toàn bộ quyền truy cập đã cấp. Đây là hành động <strong>không thể hoàn tác</strong>.
+  </p>
+  <form method="post" action="/admin/apps/<%= app.id %>/delete">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="btn btn-danger"
+            onclick="return confirm('Xác nhận xóa ứng dụng \'<%= app.slug %>\'?')">
+      Xóa ứng dụng này
+    </button>
+  </form>
+</div>
+
+<%- include('_foot') %>

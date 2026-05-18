@@ -1,0 +1,49 @@
+<%- include('layout', { pageTitle: 'Tạo vai trò', activePage: 'roles', username }) %>
+
+<div class="page-header">
+  <h1>Tạo vai trò mới</h1>
+  <a href="/admin/roles" class="btn btn-secondary btn-sm">← Danh sách</a>
+</div>
+
+<% if (error) { %>
+<div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<form method="post" action="/admin/roles" class="admin-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <div class="form-group">
+    <label class="form-label">Mã vai trò <span class="req">*</span></label>
+    <input class="form-control font-mono" type="text" name="name" value="<%= form.name || '' %>"
+           placeholder="vd: ke_toan, quan_ly, nhan_vien"
+           autocomplete="off" required>
+    <p class="form-hint">Chữ thường a–z, số, dấu gạch dưới. Không thể đổi sau khi tạo.</p>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Tên hiển thị <span class="req">*</span></label>
+    <input class="form-control" type="text" name="display_name" value="<%= form.display_name || '' %>"
+           placeholder="vd: Kế toán, Quản lý, Nhân viên" required>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Mô tả <span class="text-muted" style="font-weight:400">(tùy chọn)</span></label>
+    <textarea class="form-control" name="description" rows="2"
+              placeholder="Mô tả ngắn về vai trò này"><%= form.description || '' %></textarea>
+  </div>
+
+  <div class="form-group" style="margin-bottom:1.75rem">
+    <label class="checkbox-label">
+      <input type="checkbox" name="is_admin" value="1" <%= form.is_admin == 1 ? 'checked' : '' %>>
+      <span>Vai trò có quyền quản trị (admin)</span>
+    </label>
+    <p class="form-hint" style="margin-left:1.5rem">Admin có thể truy cập khu vực quản trị, quản lý tài khoản và vai trò.</p>
+  </div>
+
+  <div style="display:flex;gap:.75rem">
+    <button type="submit" class="btn btn-success">Tạo vai trò</button>
+    <a href="/admin/roles" class="btn btn-secondary">Hủy</a>
+  </div>
+</form>
+
+<%- include('_foot') %>

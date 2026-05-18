@@ -1,0 +1,57 @@
+<%- include('layout', { pageTitle: 'Ứng dụng', activePage: 'apps', username }) %>
+
+<div class="page-header">
+  <h1>Quản lý ứng dụng</h1>
+  <a href="/admin/apps/new" class="btn btn-success">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Thêm ứng dụng
+  </a>
+</div>
+
+<% if (success) { %>
+<div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<% if (apps.length === 0) { %>
+  <p class="text-faint">Chưa có ứng dụng nào.</p>
+<% } else { %>
+<%
+  const statusBadge = { stable: 'badge-green', beta: 'badge-blue', disabled: 'badge-gray' };
+  const statusLabel = { stable: 'Hoạt động', beta: 'Beta', disabled: 'Tắt' };
+%>
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Icon</th>
+        <th>Slug</th>
+        <th>Tên ứng dụng</th>
+        <th>Trạng thái</th>
+        <th style="text-align:center">Vai trò</th>
+        <th style="text-align:center">Thứ tự</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% apps.forEach(a => { %>
+      <tr>
+        <td style="font-size:1.375rem;text-align:center;width:44px;padding-right:0"><%= a.icon %></td>
+        <td class="font-mono text-muted" style="font-size:.875rem"><%= a.slug %></td>
+        <td class="font-medium" style="color:var(--c-text)"><%= a.name %></td>
+        <td><span class="badge <%= statusBadge[a.status] || 'badge-gray' %>"><%= statusLabel[a.status] || a.status %></span></td>
+        <td class="text-muted" style="text-align:center"><%= a.role_count %></td>
+        <td class="text-faint" style="text-align:center;font-size:.8125rem"><%= a.sort_order %></td>
+        <td style="white-space:nowrap">
+          <a href="/admin/apps/<%= a.id %>/permissions" class="btn btn-secondary btn-sm">Quyền</a>
+          <a href="/admin/apps/<%= a.id %>/edit" class="btn btn-secondary btn-sm" style="margin-left:.25rem">Sửa</a>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<%- include('_foot') %>
